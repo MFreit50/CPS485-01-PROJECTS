@@ -1,0 +1,40 @@
+from abc import ABC, abstractmethod
+from typing import Optional
+from .event import Event
+
+class Producer(ABC):
+    """
+    Abstract base class for all event producers.
+
+    - Producers generate events representing meaningful occurrences
+    - Each producer has a unique identifier
+    - Producers can emit events to be consumed by consumers
+
+    """
+
+    @abstractmethod
+    def start(self) -> None:
+        """
+        Initialize algorithm state
+        Must be called before step()
+        """
+        pass
+
+    @abstractmethod
+    def step(self) -> Optional[Event]:
+        """
+        Execute a single step of the algorithm
+        Returns:
+            An Event if a meaningful occurrence happened
+            else None
+        """
+        pass
+
+    @abstractmethod
+    def is_finished(self) -> bool:
+        """
+        Check if the algorithm has completed execution
+        Returns:
+            True if finished, else False
+        """
+        pass
