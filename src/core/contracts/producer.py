@@ -17,6 +17,9 @@ class Producer(ABC):
         """
         Initialize algorithm state
         Must be called before step()
+
+        Raises:
+            InvalidLifecycleError: if called more than once
         """
         pass
 
@@ -27,6 +30,9 @@ class Producer(ABC):
         Returns:
             An Event if a meaningful occurrence happened
             else None
+        Raises:
+            InvalidLifecycleError: if called before start()
+            or after completion
         """
         pass
 
