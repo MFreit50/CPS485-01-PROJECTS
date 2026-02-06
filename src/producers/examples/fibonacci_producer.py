@@ -1,85 +1,54 @@
 from typing import Optional
 
-from src.core.contracts.producer import Producer
+from src.producers.base.base_producer import BaseProducer
 from src.core.contracts.clock import Clock
 from src.core.contracts.event import Event
-from src.core.errors import InvalidLifecycleError
 
-class FibonacciProducer(Producer):
+class FibonacciProducer(BaseProducer):
     """
     Producer that emits Fibonacci numbers step by step.
     """
 
-    def __init__(self, clock: Clock, max_count: int) -> None:
+    def __init__(self, clock: Clock, limit: int) -> None:
         """
         Args:
             clock (Clock): The clock instance to track steps.
-            max_count (int): The maximum number of Fibonacci numbers to produce.
+            limit (int): The maximum number of Fibonacci numbers to produce.
         """
-        self._clock = clock
-        self._max_count = max_count
+        super().__init__(clock=clock)
+        self._limit = limit
 
-        self._index = 0
+    def _on_start(self) -> None:
         self.previous = 0
         self.current = 1
+        self._index = 0
 
-        self._started = False
-        self._finished = False
-    
-    def start(self) -> None:
+    def _step(self) -> Optional[Event]:
         """
-        Initialize the Producer.
-        Must be called before step().
-        Raises:
-            InvalidLifecycleError: if called more than once
-        """
-        
-        if self._started:
-            raise InvalidLifecycleError("Producer.start() called more than once.")
-        
-        self._started = True
-        self._finished = False
-    
-    def step(self) -> Optional[Event]:
-        """
-        Execute a single step of the Fibonacci sequence.
+        Execute a single step to produce the next Fibonacci number.
         Returns:
-            An Event if the current index is less than max_count,
+            An Event with the next Fibonacci number if within limit,
             else None.
         Raises:
-            InvalidLifecycleError: 
-                - if step() is called before start()
-                - if step() is called after completion
+            InvalidLifecycleError:
+                -if step() is called before start()
+                -if step() is called after completion
         """
 
-        if not self._started:
-            raise InvalidLifecycleError("Producer.step() called before start().")
-        if self._finished:
-            raise InvalidLifecycleError("Producer.step() called after completion.")
-
-        if self._index >= self._max_count:
+        if self._index >= self._limit:
             self._finished = True
             return None
         
-        #Generate the next Fibonacci number
-        value = self.previous
-        self.previous, self.current = (self.current, self.previous + self.current)
+        step = self._clock.tick()
 
         event = Event(
             event_type="fibonacci_number",
-            step=self._clock.now(),
-            payload={"index": self._index, "value": value}
+            step=step,
+            payload={"index": self._index, "value": self.previous}
         )
+        # Generate the next Fibonacci number
+        self.previous, self.current = (self.current, self.previous + self.current)
 
         self._index += 1
-        self._clock.tick()
 
         return event
-    
-    def is_finished(self) -> bool:
-        """
-        Check if the Producer has completed execution.
-        Returns:
-            True if finished, else False
-        """
-        return self._finished

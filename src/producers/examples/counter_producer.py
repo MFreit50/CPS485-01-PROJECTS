@@ -1,68 +1,49 @@
 from typing import Optional
-from src.core.contracts.producer import Producer
+from src.producers.base.base_producer import BaseProducer
 from src.core.contracts.event import Event
 from src.core.contracts.clock import Clock
-from src.core.errors import InvalidLifecycleError
 
-class CounterProducer(Producer):
+class CounterProducer(BaseProducer):
     """
-    A simple producer that counts from 0 to a max_value,
+    A simple producer that counts from 0 to a limit,
     emitting an event at each step.
-
-    Args:
-        max_value (int): The maximum count value.
-        clock (Clock): The clock instance to track steps.
     """
 
-    def __init__(self, clock : Clock, max_value: int) -> None:
-        self._clock = clock
-        self._max_value = max_value
-        self._current = 0
-        self._started = False
-        self._finished = False
+    def __init__(self, *, clock : Clock, limit: int) -> None:
+        """
+        Args:
+            clock (Clock): The clock instance to track steps.
+            limit (int): The maximum count value.
+        """
+        super().__init__(clock=clock)
+        self._limit = limit
 
-    def start(self) -> None:
+    def _on_start(self) -> None:
+        self._index = 0
+    
+    def _step(self) -> Optional[Event]:
         """
-        Initialize the counter state.
-        Must be called before step().
-        """
-        self._current = 0
-        self._finished = False
-        self._started = True
-
-    def step(self) -> Optional[Event]:
-        """
-        Execute a single step of the counter.
+        Execute a single counting step.
         Returns:
-            An Event if the current count is less than the max_value,
+            An Event if the current value is less than limit,
             else None.
+        Raises:
+            InvalidLifecycleError:
+                -if step() is called before start()
+                -if step() is called after completion
         """
-
-        if not self._started:
-            raise InvalidLifecycleError("Producer.step() called before start().")
-        if self._finished:
-            raise InvalidLifecycleError("Producer.step() called after completion.")
-
-        if self._current >= self._max_value:
+        if self._index >= self._limit:
             self._finished = True
             return None
-        
+
         step = self._clock.tick()
 
         event = Event(
             event_type="counter_increment",
             step=step,
-            payload={"value": self._current}
+            payload={"value": self._index}
         )
 
-        self._current += 1
+        self._index += 1
         
         return event
-
-    def is_finished(self) -> bool:
-        """
-        Check if the counter has completed counting to the limit.
-        Returns:
-            True if finished, else False.
-        """
-        return self._finished

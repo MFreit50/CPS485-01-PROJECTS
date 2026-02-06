@@ -25,15 +25,15 @@ def main():
     transport = InMemoryTransport(consumers=[consumer])
 
     print("\n--- Counter Producer ---")
-    counter_producer = CounterProducer(clock=clock, max_value=5)
+    counter_producer = CounterProducer(clock=clock, limit=5)
     run_producer(counter_producer, transport)
 
     print("\n--- Fibonacci Producer ---")
-    fibonacci_producer = FibonacciProducer(clock=clock, max_count=10)
+    fibonacci_producer = FibonacciProducer(clock=clock, limit=10)
     run_producer(fibonacci_producer, transport)
 
     print("\n--- Seeded Random Producer ---")
-    random_producer = SeededRandomProducer(clock=clock, total_steps=5, seed=42)
+    random_producer = SeededRandomProducer(clock=clock, limit=5, seed=42)
     run_producer(random_producer, transport)
 
 if __name__ == "__main__":
