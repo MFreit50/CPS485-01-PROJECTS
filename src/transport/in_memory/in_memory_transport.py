@@ -1,10 +1,9 @@
-from typing import Optional, List
-from src.core.contracts.transport import Transport
-from src.core.contracts.consumer import Consumer
-from src.core.contracts.event import Event
-from src.core.errors import InvalidEventError
+from typing import List
 
-class InMemoryTransport(Transport):
+from src.core.contracts.event import Event
+from src.transport.base.base_transport import BaseTransport
+
+class InMemoryTransport(BaseTransport):
     """
     In-memory transport mechanism for moving events from producers to consumers.
 
@@ -13,22 +12,9 @@ class InMemoryTransport(Transport):
 
     """
 
-    def __init__(self, consumers: Optional[List[Consumer]] = None) -> None:
-        """
-        Initialize the transporter.
-
-        Args:
-            consumers (Optional[List[Consumer]]): List of Consumer objects. If None, an empty list is created.
-        """
-        self.consumers: List[Consumer] = consumers if consumers is not None else []
-
-    def subscribe(self, consumer: Consumer) -> None:
-        """
-        Register a consumer to receive events.
-        Args:
-            consumer (Consumer): The consumer to subscribe
-        """
-        self.consumers.append(consumer)
+    def __init__(self) -> None:
+        super().__init__()
+        self._events: List[Event] = []
 
     def publish(self, event: Event) -> None:
         """
@@ -39,8 +25,11 @@ class InMemoryTransport(Transport):
             InvalidEventError: if the event is invalid.
         """
 
-        if event is None:
-            raise InvalidEventError("Cannot publish a None event.")
-        
-        for consumer in self.consumers:
-            consumer.on_event(event)
+        self._events.append(event)
+
+        super().publish(event)
+
+    @property
+    def events(self) -> List[Event]:
+        """Read-only access to the list of stored events."""
+        return self._events.copy()
