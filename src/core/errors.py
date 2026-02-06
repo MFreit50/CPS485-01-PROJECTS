@@ -6,7 +6,7 @@ class ContractViolationError(VisualizationEngineError):
     """Raised when a contract between components is violated."""
     pass
 
-class InvalidLifecycleStateError(ContractViolationError):
+class InvalidLifecycleError(ContractViolationError):
     """Raised when an object is used in an invalid lifecycle state."""
     pass
 
