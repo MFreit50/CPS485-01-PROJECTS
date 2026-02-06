@@ -1,4 +1,4 @@
-from typing import List
+from typing import Optional, List
 from src.core.contracts.transport import Transport
 from src.core.contracts.consumer import Consumer
 from src.core.contracts.event import Event
@@ -13,8 +13,14 @@ class InMemoryTransport(Transport):
 
     """
 
-    def __init__(self) -> None:
-        self.consumers: List[Consumer] = []
+    def __init__(self, consumers: Optional[List[Consumer]] = None) -> None:
+        """
+        Initialize the transporter.
+
+        Args:
+            consumers (Optional[List[Consumer]]): List of Consumer objects. If None, an empty list is created.
+        """
+        self.consumers: List[Consumer] = consumers if consumers is not None else []
 
     def subscribe(self, consumer: Consumer) -> None:
         """
