@@ -43,6 +43,10 @@ class CounterProducer(Producer):
         if self._finished:
             raise InvalidLifecycleError("Producer.step() called after completion.")
 
+        if self._current >= self._max_value:
+            self._finished = True
+            return None
+        
         step = self._clock.tick()
 
         event = Event(
@@ -52,9 +56,6 @@ class CounterProducer(Producer):
         )
 
         self._current += 1
-        
-        if self._current > self.max_value:
-            self._finished = True
         
         return event
 
