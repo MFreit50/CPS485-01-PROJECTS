@@ -22,7 +22,8 @@ def run_producer(producer, transport) -> None:
 def main():
     clock = SimpleClock()
     consumer = PrintConsumer()
-    transport = InMemoryTransport(consumers=[consumer])
+    transport = InMemoryTransport()
+    transport.subscribe(consumer)
 
     print("\n--- Counter Producer ---")
     counter_producer = CounterProducer(clock=clock, limit=5)
