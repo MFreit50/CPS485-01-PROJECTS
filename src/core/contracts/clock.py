@@ -19,3 +19,12 @@ class Clock(ABC):
             InvalidLifecycleError: if called before initialization
         """
         pass
+
+    @abstractmethod
+    def now(self) -> int:
+        """
+        Get the current time without advancing the clock
+        Returns:
+            The current time
+        """
+        pass
