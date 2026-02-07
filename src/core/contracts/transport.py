@@ -7,7 +7,7 @@ class Transport(ABC):
     Abstract base class for all transport mechanisms
 
     - Responsible for moving events from producers to consumers
-    
+
     """
 
     @abstractmethod
@@ -16,6 +16,9 @@ class Transport(ABC):
         Publish an event to all subscribed consumers.
         Args:
             event (Event): The event to be published
+        
+        Raises:
+            InvalidEventError: if the event is invalid.
         """
         pass
 
