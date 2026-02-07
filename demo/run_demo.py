@@ -1,4 +1,4 @@
-from src.core.clock.simple_clock import SimpleClock
+from src.core.time.simple_clock import SimpleClock
 from src.producers.examples.counter_producer import CounterProducer
 from src.producers.examples.fibonacci_producer import FibonacciProducer
 from src.producers.examples.random_producer import SeededRandomProducer
