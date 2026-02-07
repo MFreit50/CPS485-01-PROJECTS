@@ -11,7 +11,16 @@ class Producer(ABC):
     - Producers can emit events to be consumed by consumers
 
     """
-
+    @property
+    @abstractmethod
+    def producer_id(self) -> str:
+        """
+        Unique identifier for the producer
+        Returns:
+            str: The unique producer ID
+        """
+        pass
+    
     @abstractmethod
     def start(self) -> None:
         """

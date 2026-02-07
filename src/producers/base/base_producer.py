@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import ClassVar, Optional
 
 from src.core.contracts.producer import Producer
 from src.core.contracts.event import Event
@@ -15,12 +15,24 @@ class BaseProducer(Producer, ABC):
     - clock availability
     """
 
+    _counter: ClassVar[int] = 0
+    
     def __init__(self, *, clock: Clock) -> None:
         self._clock = clock
 
         self._started = False
         self._finished = False
 
+        self._producer_id = f"{self.__class__.__name__}_{BaseProducer._counter}"
+        BaseProducer._counter += 1
+
+    @property
+    def producer_id(self) -> str:
+        """
+        Unique identifier for the producer instance.
+        """
+        return self._producer_id
+    
     def start(self) -> None:
         """
         Initialize the producer state.
@@ -64,7 +76,7 @@ class BaseProducer(Producer, ABC):
         Returns True if the producer is finished.
         """
         return self._finished
-    
+
     @property
     def clock(self) -> Clock:
         """
