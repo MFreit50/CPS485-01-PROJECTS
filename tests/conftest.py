@@ -19,5 +19,5 @@ def dummy_consumer():
 
 @pytest.fixture
 def counter_producer():
-    clock = SimpleClock()
+    clock = SimpleClock().as_read_only()
     return CounterProducer(clock=clock, limit=3)

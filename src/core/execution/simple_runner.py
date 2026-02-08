@@ -26,6 +26,7 @@ class SimpleRunner(Runner):
 
         self._started = False
         self._finished = False
+        self._step: int = 0
 
     def start(self) -> None:
         """
@@ -39,6 +40,7 @@ class SimpleRunner(Runner):
         
         self._started = True
         self._finished = False
+        self._step = 0
 
         for producer in self._producers:
             producer.start()
@@ -63,17 +65,18 @@ class SimpleRunner(Runner):
         if self._finished:
             raise InvalidLifecycleError("SimpleRunner.step() called after completion.")
 
-        step = self._clock.tick()
-
         for producer in self._producers:
             if producer.is_finished():
                 continue
 
-            event = producer.step()
+            event = producer.step(self._step)
+
             if event is not None:
                 self._transport.publish(event)
                 if self._tracer:
-                    self._tracer.record_step(producer_id=producer.producer_id, event=event, step=step)
+                    self._tracer.record_step(producer_id=producer.producer_id, event=event, step=self._step)
+            
+            self._step = self._clock.tick()
         
         if self._all_finished():
             self._finished = True

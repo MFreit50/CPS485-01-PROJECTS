@@ -15,9 +15,11 @@ def main():
 
     tracer = SimpleRunnerTracer()
 
-    counter_producer = CounterProducer(clock=clock, limit=5)
-    fibonacci_producer = FibonacciProducer(clock=clock, limit=10)
-    random_producer = SeededRandomProducer(clock=clock, limit=5, seed=42)
+    clock = SimpleClock()
+    read_only_clock = clock.as_read_only()
+    counter_producer = CounterProducer(clock=read_only_clock, limit=5)
+    fibonacci_producer = FibonacciProducer(clock=read_only_clock, limit=10)
+    random_producer = SeededRandomProducer(clock=read_only_clock, limit=5, seed=42)
 
     producers = [counter_producer, fibonacci_producer, random_producer]
 

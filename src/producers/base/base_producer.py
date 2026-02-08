@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar, Optional
 
+from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.contracts.producer import Producer
 from src.core.contracts.event import Event
-from src.core.contracts.clock import Clock
 from src.core.errors import InvalidLifecycleError
 
 class BaseProducer(Producer, ABC):
@@ -17,7 +17,7 @@ class BaseProducer(Producer, ABC):
 
     _counter: ClassVar[int] = 0
     
-    def __init__(self, *, clock: Clock) -> None:
+    def __init__(self, *, clock: ReadOnlyClock) -> None:
         self._clock = clock
 
         self._started = False
@@ -47,7 +47,7 @@ class BaseProducer(Producer, ABC):
         self._finished = False
         self._on_start()
 
-    def step(self) -> Optional[Event]:
+    def step(self, step: int) -> Event:
         """
         Execute a single step of the producer.
         Returns:
@@ -64,7 +64,7 @@ class BaseProducer(Producer, ABC):
         if self._finished:
             raise InvalidLifecycleError("Producer.step() called after completion.")
 
-        event = self._step()
+        event = self._step(step)
 
         if self.is_finished():
             self._finished = True
@@ -78,15 +78,29 @@ class BaseProducer(Producer, ABC):
         return self._finished
 
     @property
-    def clock(self) -> Clock:
+    def clock(self) -> ReadOnlyClock:
         """
-        Access the producer's clock.
+        Access the producer's clock instance.
+        Returns:
+            The clock instance provided at initialization.
+        Note:
+            This is a read-only view of the clock to prevent producers
+            from modifying time directly.
         """
         return self._clock
     
+    @property
+    def now(self) -> int:
+        """
+        Get the current time from the clock.
+        Returns:
+            The current time as an integer step count.
+        """
+        return self._clock.now()
+    
     #Hooks for subclasses
     @abstractmethod
-    def _step(self) -> Optional[Event]:
+    def _step(self, step: int) -> Event:
         """
         Internal step method to be implemented by subclasses.
         Returns:

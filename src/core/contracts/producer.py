@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+
 from .event import Event
 
 class Producer(ABC):
@@ -33,9 +33,11 @@ class Producer(ABC):
         pass
 
     @abstractmethod
-    def step(self) -> Optional[Event]:
+    def step(self, step: int) -> Event:
         """
         Execute a single step of the algorithm
+        Args:
+            step (int): The step number to execute
         Returns:
             An Event if a meaningful occurrence happened
             else None

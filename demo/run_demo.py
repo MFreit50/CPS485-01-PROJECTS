@@ -13,14 +13,15 @@ def run_producer(producer, transport) -> None:
     """
 
     producer.start()
-
+    step = 0
     while not producer.is_finished():
-        event = producer.step()
+        event = producer.step(step)
         if event is not None:
             transport.publish(event)
+        step += 1
 
 def main():
-    clock = SimpleClock()
+    clock = SimpleClock().as_read_only()
     consumer = PrintConsumer()
     transport = InMemoryTransport()
     transport.subscribe(consumer)
