@@ -26,7 +26,7 @@ class SimpleRunner(Runner):
 
         self._started = False
         self._finished = False
-        self._step: int = 0
+        self._timestamp: int = 0
 
     def start(self) -> None:
         """
@@ -40,7 +40,7 @@ class SimpleRunner(Runner):
         
         self._started = True
         self._finished = False
-        self._step = 0
+        self._timestamp = 0
 
         for producer in self._producers:
             producer.start()
@@ -69,14 +69,14 @@ class SimpleRunner(Runner):
             if producer.is_finished():
                 continue
 
-            event = producer.step(self._step)
+            event = producer.step(self._timestamp)
 
             if event is not None:
                 self._transport.publish(event)
                 if self._tracer:
-                    self._tracer.record_step(producer_id=producer.producer_id, event=event, step=self._step)
+                    self._tracer.record_step(producer_id=producer.producer_id, event=event, timestamp=self._timestamp)
             
-            self._step = self._clock.tick()
+            self._timestamp= self._clock.tick()
         
         if self._all_finished():
             self._finished = True

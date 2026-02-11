@@ -47,9 +47,11 @@ class BaseProducer(Producer, ABC):
         self._finished = False
         self._on_start()
 
-    def step(self, step: int) -> Event:
+    def step(self, timestamp: int) -> Event:
         """
         Execute a single step of the producer.
+        Args:
+            timestamp (int): The logical clock time when the step occurred
         Returns:
             An Event if a meaningful occurrence happened,
             else None.
@@ -64,7 +66,7 @@ class BaseProducer(Producer, ABC):
         if self._finished:
             raise InvalidLifecycleError("Producer.step() called after completion.")
 
-        event = self._step(step)
+        event = self._step(timestamp)
 
         if self.is_finished():
             self._finished = True
@@ -100,7 +102,7 @@ class BaseProducer(Producer, ABC):
     
     #Hooks for subclasses
     @abstractmethod
-    def _step(self, step: int) -> Event:
+    def _step(self, timestamp: int) -> Event:
         """
         Internal step method to be implemented by subclasses.
         Returns:

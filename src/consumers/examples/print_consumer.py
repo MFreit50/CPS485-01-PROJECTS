@@ -12,8 +12,4 @@ class PrintConsumer(Consumer):
         Args:
             event (Event): The event to be handled
         """
-        print(
-            f"[step={event.step}] "
-            f"type={event.event_type} "
-            f"payload={event.payload}"
-        )
+        print(event)

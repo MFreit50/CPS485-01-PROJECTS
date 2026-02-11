@@ -15,15 +15,15 @@ class SimpleRunnerTracer(RunnerTracer):
     def __init__(self) -> None:
         self._trace_log: List[TraceEntry] = []
 
-    def record_step(self, producer_id: str, step: int, event: Event) -> None:
+    def record_step(self, producer_id: str, timestamp: int, event: Event) -> None:
         """
         Record a single step in the execution trace.
         Args:
             producer_id (str): The unique identifier of the producer that executed the step
-            step (int): The logical clock time when the step occurred
+            timestamp (int): The logical clock time when the step occurred
             event (Event): The event emitted by the producer during this step
         """
-        entry = TraceEntry(event=event, producer_id=producer_id, step=step)
+        entry = TraceEntry(event=event, producer_id=producer_id, timestamp=timestamp)
         self._trace_log.append(entry)
     
     def get_trace(self) -> List[TraceEntry]:

@@ -1,6 +1,6 @@
 from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.producers.base.base_producer import BaseProducer
-from src.core.contracts.event import Event
+from src.core.events.counter.counter_number import CounterNumber
 
 class CounterProducer(BaseProducer):
     """
@@ -20,21 +20,23 @@ class CounterProducer(BaseProducer):
     def _on_start(self) -> None:
         self._index = 0
     
-    def _step(self, step: int) -> Event:
+    def _step(self, timestamp: int) -> CounterNumber:
         """
         Execute a single counting step.
+        Args:
+            timestamp (int): The logical clock time when the step occurred
         Returns:
-            An Event if the current value is less than limit
+            A CounterNumber event if the current value is less than limit
         Raises:
             InvalidLifecycleError:
                 -if step() is called before start()
                 -if step() is called after completion
         """
 
-        event = Event(
-            event_type="counter_increment",
-            step=step,
-            payload={"value": self._index}
+        event = CounterNumber(
+            timestamp=timestamp,
+            producer_id=self._producer_id,
+            value=self._index
         )
 
         self._index += 1

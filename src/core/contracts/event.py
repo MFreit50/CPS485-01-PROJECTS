@@ -1,5 +1,5 @@
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Dict
 
 @dataclass(frozen=True)
@@ -14,6 +14,15 @@ class Event(ABC):
 
     """
 
-    event_type: str
-    step: int
-    payload: Dict[str, Any]
+    timestamp: int
+    producer_id: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize the event to a dictionary.
+        Returns:
+            A dictionary representation of the event.
+        """
+        data = asdict(self)
+        data["event_type"] = self.__class__.__name__
+        return data

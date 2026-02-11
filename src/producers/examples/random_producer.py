@@ -2,7 +2,7 @@ import random
 
 from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.producers.base.base_producer import BaseProducer
-from src.core.contracts.event import Event
+from src.core.events.counter.random_number_generator import RandomNumber
 
 class SeededRandomProducer(BaseProducer):
     """
@@ -23,11 +23,13 @@ class SeededRandomProducer(BaseProducer):
     def _on_start(self) -> None:
         self._index = 0
 
-    def _step(self, step: int) -> Event:
+    def _step(self, timestamp: int) -> RandomNumber:
         """
         Execute a single step of the random number producer.
+        Args:
+            timestamp (int): The logical clock time when the step occurred
         Returns:
-            An Event with a random number if within total_steps
+            An RandomNumber event with a random number if within total_steps
         Raises:
             InvalidLifecycleError: 
                 - if step() is called before start()
@@ -36,10 +38,10 @@ class SeededRandomProducer(BaseProducer):
 
         random_value = self._random.random()
 
-        event = Event(
-            event_type="random_number",
-            step=step,
-            payload={"value": random_value}
+        event = RandomNumber(
+            timestamp=timestamp,
+            producer_id=self._producer_id,
+            value=random_value
         )
         self._index += 1
 

@@ -9,8 +9,8 @@ class TraceEntry:
     Attributes:
         event (Event): The event emitted by the producer
         producer_id (str): The unique identifier of the producer
-        step (int): The logical clock time when the event occurred
+        timestamp (int): The logical clock time when the event occurred
     """
     event: Event
     producer_id: str
-    step: int
+    timestamp: int

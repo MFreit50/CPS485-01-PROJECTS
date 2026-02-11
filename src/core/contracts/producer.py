@@ -33,11 +33,11 @@ class Producer(ABC):
         pass
 
     @abstractmethod
-    def step(self, step: int) -> Event:
+    def step(self, timestamp: int) -> Event:
         """
         Execute a single step of the algorithm
         Args:
-            step (int): The step number to execute
+            timestamp (int): The logical clock time when the step occurred
         Returns:
             An Event if a meaningful occurrence happened
             else None

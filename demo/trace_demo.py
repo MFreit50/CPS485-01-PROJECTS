@@ -30,7 +30,7 @@ def main():
 
     print("\n--- Trace Entries ---")
     for entry in tracer.get_trace():
-        print(f"[step={entry.step}] producer={entry.producer_id} event={entry.event.event_type} payload={entry.event.payload}")
+        print(entry)
 
 if __name__ == "__main__":
     main()
