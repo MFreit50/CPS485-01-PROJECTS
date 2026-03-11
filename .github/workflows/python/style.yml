@@ -1,0 +1,27 @@
+name: Python Style Enforcement
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+    
+jobs:
+    style:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout code
+            uses: actions/checkout@v3
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.13'
+        -   name: Install dependencies
+            run: pip install black isort ruff mypy
+        -   name: Run Black     #Responsible for code formatting
+            run: black --check
+        -   name: Run isort     #Responsible for sorting imports
+            run: isort --check-only
+        -   name: Run Ruff      #Responsible for linting and style checks
+            run: ruff check
+        -   name: Run Mypy      #Responsible for type checking
+                run: mypy src/
