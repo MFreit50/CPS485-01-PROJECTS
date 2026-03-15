@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from .event import Event
 
+
 class Producer(ABC):
     """
     Abstract base class for all event producers.
@@ -11,6 +12,7 @@ class Producer(ABC):
     - Producers can emit events to be consumed by consumers
 
     """
+
     @property
     @abstractmethod
     def producer_id(self) -> str:
@@ -20,7 +22,7 @@ class Producer(ABC):
             str: The unique producer ID
         """
         pass
-    
+
     @abstractmethod
     def start(self) -> None:
         """

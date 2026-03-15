@@ -1,6 +1,7 @@
 from src.core.contracts.event import Event
 from src.transport.base.base_transport import BaseTransport
 
+
 class InMemoryTransport(BaseTransport):
     """
     In-memory transport mechanism for moving events from producers to consumers.

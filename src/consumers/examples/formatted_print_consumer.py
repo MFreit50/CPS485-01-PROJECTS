@@ -1,6 +1,8 @@
+from pprint import pprint
+
 from src.core.contracts.consumer import Consumer
 from src.core.contracts.event import Event
-from pprint import pprint
+
 
 class FormattedPrintConsumer(Consumer):
     """

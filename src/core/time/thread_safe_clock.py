@@ -1,8 +1,11 @@
 import threading
 
-from core.time._thread_safe_read_only_clock_wrapper import _ThreadSafeReadOnlyClockWrapper
-from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.contracts.clock import Clock
+from src.core.contracts.read_only_clock import ReadOnlyClock
+from src.core.time._thread_safe_read_only_clock_wrapper import (
+    _ThreadSafeReadOnlyClockWrapper,
+)
+
 
 class ThreadSafeClock(Clock):
     """
@@ -31,7 +34,7 @@ class ThreadSafeClock(Clock):
         """
         with self._lock:
             return self._time
-    
+
     def as_read_only(self) -> ReadOnlyClock:
         """
         Get a thread-safe read-only view of this clock.

@@ -1,9 +1,10 @@
+from src.consumers.examples.print_consumer import PrintConsumer
 from src.core.time.simple_clock import SimpleClock
 from src.producers.examples.counter_producer import CounterProducer
 from src.producers.examples.fibonacci_producer import FibonacciProducer
 from src.producers.examples.random_producer import SeededRandomProducer
-from src.consumers.examples.print_consumer import PrintConsumer
 from src.transport.in_memory.in_memory_transport import InMemoryTransport
+
 
 def run_producer(producer, transport) -> None:
     """
@@ -19,6 +20,7 @@ def run_producer(producer, transport) -> None:
         if event is not None:
             transport.publish(event)
         step += 1
+
 
 def main():
     clock = SimpleClock().as_read_only()
@@ -37,6 +39,7 @@ def main():
     print("\n--- Seeded Random Producer ---")
     random_producer = SeededRandomProducer(clock=clock, limit=5, seed=42)
     run_producer(random_producer, transport)
+
 
 if __name__ == "__main__":
     main()

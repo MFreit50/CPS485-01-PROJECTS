@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Runner(ABC):
     """
     Abstract base class for all execution runners
@@ -35,9 +36,9 @@ class Runner(ABC):
     def run(self) -> None:
         """
         Start the execution process until completion.
-        """ 
+        """
         pass
-    
+
     @abstractmethod
     def is_finished(self) -> bool:
         """

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar, Optional
+from typing import ClassVar
 
-from src.core.contracts.read_only_clock import ReadOnlyClock
-from src.core.contracts.producer import Producer
 from src.core.contracts.event import Event
+from src.core.contracts.producer import Producer
+from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.errors import InvalidLifecycleError
+
 
 class BaseProducer(Producer, ABC):
     """
@@ -16,7 +17,7 @@ class BaseProducer(Producer, ABC):
     """
 
     _counter: ClassVar[int] = 0
-    
+
     def __init__(self, *, clock: ReadOnlyClock) -> None:
         self._clock = clock
 
@@ -32,7 +33,7 @@ class BaseProducer(Producer, ABC):
         Unique identifier for the producer instance.
         """
         return self._producer_id
-    
+
     def start(self) -> None:
         """
         Initialize the producer state.
@@ -42,7 +43,7 @@ class BaseProducer(Producer, ABC):
         """
         if self._started:
             raise InvalidLifecycleError("Producer.start() called more than once.")
-        
+
         self._started = True
         self._finished = False
         self._on_start()
@@ -56,7 +57,7 @@ class BaseProducer(Producer, ABC):
             An Event if a meaningful occurrence happened,
             else None.
         Raises:
-            InvalidLifecycleError: 
+            InvalidLifecycleError:
                 - if step() is called before start()
                 - if step() is called after completion
         """
@@ -72,7 +73,7 @@ class BaseProducer(Producer, ABC):
             self._finished = True
 
         return event
-    
+
     def is_finished(self) -> bool:
         """
         Returns True if the producer is finished.
@@ -90,7 +91,7 @@ class BaseProducer(Producer, ABC):
             from modifying time directly.
         """
         return self._clock
-    
+
     @property
     def now(self) -> int:
         """
@@ -99,8 +100,8 @@ class BaseProducer(Producer, ABC):
             The current time as an integer step count.
         """
         return self._clock.now()
-    
-    #Hooks for subclasses
+
+    # Hooks for subclasses
     @abstractmethod
     def _step(self, timestamp: int) -> Event:
         """
@@ -117,4 +118,3 @@ class BaseProducer(Producer, ABC):
         Called once when start() is invoked.
         """
         pass
-

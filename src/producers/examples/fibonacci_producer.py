@@ -1,6 +1,7 @@
 from src.core.contracts.read_only_clock import ReadOnlyClock
-from src.producers.base.base_producer import BaseProducer
 from src.core.events.counter.fibonacci_number import FibonacciNumber
+from src.producers.base.base_producer import BaseProducer
+
 
 class FibonacciProducer(BaseProducer):
     """
@@ -35,9 +36,7 @@ class FibonacciProducer(BaseProducer):
         """
 
         event = FibonacciNumber(
-            timestamp=timestamp,
-            producer_id=self._producer_id,
-            value=self.previous
+            timestamp=timestamp, producer_id=self._producer_id, value=self.previous
         )
         # Generate the next Fibonacci number
         self.previous, self.current = (self.current, self.previous + self.current)

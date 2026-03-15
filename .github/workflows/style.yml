@@ -1,0 +1,30 @@
+name: Python Style Enforcement
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+    
+jobs:
+    style:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout code
+            uses: actions/checkout@v6
+        -   name: Set up Python
+            uses: actions/setup-python@v6
+            with:
+                python-version: '3.13'
+        -   name: Install dependencies
+            run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install -r requirements-dev.txt
+        -   name: Run Black     #Responsible for code formatting
+            run: black --check --diff --verbose .
+        -   name: Run isort     #Responsible for sorting imports
+            run: isort --check-only --diff --verbose  .
+        -   name: Run Ruff      #Responsible for linting and style checks
+            run: ruff check --verbose .
+        -   name: Run Mypy      #Responsible for type checking
+            run: MYPYPATH=. mypy . --explicit-package-bases --verbose
