@@ -18,7 +18,7 @@ jobs:
         -   name: Install dependencies
             run: pip install black isort ruff mypy
         -   name: Run Black     #Responsible for code formatting
-            run: black --diff --verbose .
+            run: black --check --diff --verbose .
         -   name: Run isort     #Responsible for sorting imports
             run: isort --check-only --diff --verbose  .
         -   name: Run Ruff      #Responsible for linting and style checks
