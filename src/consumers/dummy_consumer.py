@@ -1,6 +1,7 @@
 from src.core.contracts.consumer import Consumer
 from src.core.contracts.event import Event
 
+
 class DummyConsumer(Consumer):
     """
     DummyConusmer

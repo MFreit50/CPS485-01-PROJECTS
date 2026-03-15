@@ -2,6 +2,7 @@ import math
 
 from src.producers.nn.activations.base import Activation
 
+
 class Tanh(Activation):
 
     def compute(self, z: float) -> float:

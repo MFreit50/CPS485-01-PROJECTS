@@ -1,6 +1,5 @@
-import math
-
 from src.producers.nn.activations.base import Activation
+
 
 class ReLU(Activation):
 

@@ -1,13 +1,13 @@
 from typing import ClassVar, List
 
 from src.core.errors import InvalidLifecycleError
-from src.producers.nn.neuron import Neuron
-from src.producers.nn.models.neuron_forward_step_result import NeuronForwardStepResult
-from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
-from src.producers.nn.models.neuron_backward_step_result import NeuronBackwardStepResult
 from src.producers.nn.models.layer_backward_step_result import LayerBackwardStepResult
-from src.producers.nn.models.neuron_update_step_result import NeuronUpdateStepResult
+from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
 from src.producers.nn.models.layer_update_step_result import LayerUpdateStepResult
+from src.producers.nn.models.neuron_backward_step_result import NeuronBackwardStepResult
+from src.producers.nn.models.neuron_forward_step_result import NeuronForwardStepResult
+from src.producers.nn.models.neuron_update_step_result import NeuronUpdateStepResult
+from src.producers.nn.neuron import Neuron
 
 
 class Layer:
@@ -31,7 +31,7 @@ class Layer:
     def forward_step(self, inputs: List[float]) -> LayerForwardStepResult:
         if self.is_complete():
             raise InvalidLifecycleError("Layer iteration has already been completed")
-            
+
         neuron = self.neurons[self._neuron_index]
         self._neuron_index += 1
 
@@ -40,24 +40,23 @@ class Layer:
 
         if self._neuron_index >= len(self.neurons):
             self._is_complete = True
-        
-        return LayerForwardStepResult(
-            layer_id = self.id,
-            neuron_result = result
-        )
-    
+
+        return LayerForwardStepResult(layer_id=self.id, neuron_result=result)
+
     def backward_step(self, grad_inputs: List[float]) -> LayerBackwardStepResult:
         if self.is_complete():
             raise InvalidLifecycleError("Layer iteration has already been completed")
         if len(grad_inputs) != len(self.neurons):
-            raise ValueError(f"Layer {self.id} expected {len(self.neurons)} grad_inputs but got {len(grad_inputs)}")
-            
+            raise ValueError(
+                f"Layer {self.id} expected {len(self.neurons)} grad_inputs but got {len(grad_inputs)}"
+            )
+
         neuron = self.neurons[len(self.neurons) - self._neuron_index - 1]
         gradient: float = grad_inputs[len(grad_inputs) - self._neuron_index - 1]
         self._neuron_index += 1
 
         result: NeuronBackwardStepResult = neuron.backward(gradient)
-        
+
         if not self.grad_inputs:
             self.grad_inputs = [0.0] * len(result.grad_inputs)
         for i, dx in enumerate(result.grad_inputs):
@@ -66,15 +65,12 @@ class Layer:
         if self._neuron_index >= len(self.neurons):
             self._is_complete = True
 
-        return LayerBackwardStepResult(
-            layer_id = self.id,
-            neuron_result = result
-        )
-    
+        return LayerBackwardStepResult(layer_id=self.id, neuron_result=result)
+
     def update_step(self, learning_rate: float) -> LayerUpdateStepResult:
         if self.is_complete():
             raise InvalidLifecycleError("Layer iteration has already been completed")
-        
+
         neuron = self.neurons[self._neuron_index]
         self._neuron_index += 1
 
@@ -82,10 +78,7 @@ class Layer:
         if self._neuron_index >= len(self.neurons):
             self._is_complete = True
 
-        return LayerUpdateStepResult(
-            layer_id=self.id,
-            neuron_result=result
-        )
+        return LayerUpdateStepResult(layer_id=self.id, neuron_result=result)
 
     def zero_grad(self) -> None:
         self.outputs.clear()
@@ -95,7 +88,7 @@ class Layer:
 
     def is_complete(self):
         return self._is_complete
-    
+
     def reset(self):
         self.outputs.clear()
         self.grad_inputs.clear()

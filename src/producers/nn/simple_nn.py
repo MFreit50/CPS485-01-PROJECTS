@@ -1,22 +1,27 @@
 from typing import List
 
-from src.producers.base.base_producer import BaseProducer
 from src.core.contracts.event import Event
-from src.producers.nn.layer import Layer
-from src.core.events.neural_network.training_complete import TrainingComplete
-from src.core.events.neural_network.backward_propagation_step import BackwardPropagationStep
-from src.core.events.neural_network.forward_propagation_step import ForwardPropagationStep
-from src.core.events.neural_network.loss_computed import LossComputed
-from src.core.events.neural_network.weight_update_step import WeightUpdateStep
 from src.core.errors import InvalidLifecycleError
-from src.producers.nn.nn_state import NN_State as State
+from src.core.events.neural_network.backward_propagation_step import (
+    BackwardPropagationStep,
+)
+from src.core.events.neural_network.forward_propagation_step import (
+    ForwardPropagationStep,
+)
+from src.core.events.neural_network.loss_computed import LossComputed
+from src.core.events.neural_network.training_complete import TrainingComplete
+from src.core.events.neural_network.weight_update_step import WeightUpdateStep
+from src.producers.base.base_producer import BaseProducer
+from src.producers.nn.layer import Layer
 from src.producers.nn.losses.base import Loss
-from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
 from src.producers.nn.models.layer_backward_step_result import LayerBackwardStepResult
+from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
 from src.producers.nn.models.layer_update_step_result import LayerUpdateStepResult
+from src.producers.nn.nn_state import NN_State as State
+
 
 class SimpleNeuralNetwork(BaseProducer):
-    #SGD IMPLEMENTATION
+    # SGD IMPLEMENTATION
     def __init__(
         self,
         clock,
@@ -52,25 +57,29 @@ class SimpleNeuralNetwork(BaseProducer):
     def _forward_step(self, timestamp) -> ForwardPropagationStep:
         layer: Layer = self.layers[self._layer_index]
 
-        layer_result: LayerForwardStepResult  = layer.forward_step(self._current_inputs)
+        layer_result: LayerForwardStepResult = layer.forward_step(self._current_inputs)
         event: ForwardPropagationStep = ForwardPropagationStep.from_forward_result(
-                timestamp=timestamp,
-                producer_id=self.producer_id,
-                epoch=self._epoch,
-                sample_index=self._sample_index,
-                layer_result=layer_result
+            timestamp=timestamp,
+            producer_id=self.producer_id,
+            epoch=self._epoch,
+            sample_index=self._sample_index,
+            layer_result=layer_result,
         )
-        
+
         self._advance_forward_state()
 
         return event
-    
+
     def _compute_loss(self, timestamp) -> LossComputed:
-        
+
         expected_output = self.expected_outputs[self._sample_index]
         predicted_output = self._current_inputs
-        self._total_loss = self._loss_function.compute(predicted_output, expected_output)
-        self._grad_inputs = self._loss_function.derivative(predicted_output, expected_output)
+        self._total_loss = self._loss_function.compute(
+            predicted_output, expected_output
+        )
+        self._grad_inputs = self._loss_function.derivative(
+            predicted_output, expected_output
+        )
 
         self._phase = State.BACKWARD_PROPAGATION
 
@@ -82,7 +91,7 @@ class SimpleNeuralNetwork(BaseProducer):
             predicted=predicted_output,
             expected=expected_output,
             loss=self._total_loss,
-            grad_inputs=self._grad_inputs.copy()
+            grad_inputs=self._grad_inputs.copy(),
         )
 
     def _backward_step(self, timestamp) -> BackwardPropagationStep:
@@ -94,7 +103,7 @@ class SimpleNeuralNetwork(BaseProducer):
             producer_id=self._producer_id,
             epoch=self._epoch,
             sample_index=self._sample_index,
-            layer_result=layer_result
+            layer_result=layer_result,
         )
 
         self._advance_backward_state()
@@ -111,7 +120,7 @@ class SimpleNeuralNetwork(BaseProducer):
             producer_id=self._producer_id,
             epoch=self._epoch,
             sample_index=self._sample_index,
-            layer_result=layer_result
+            layer_result=layer_result,
         )
 
         self._advance_update_state()
@@ -124,9 +133,9 @@ class SimpleNeuralNetwork(BaseProducer):
             return TrainingComplete(
                 timestamp=timestamp,
                 producer_id=self._producer_id,
-                final_loss=self._total_loss
+                final_loss=self._total_loss,
             )
-        
+
         match self._phase:
             case State.FORWARD_PROPAGATION:
                 return self._forward_step(timestamp)
@@ -178,7 +187,7 @@ class SimpleNeuralNetwork(BaseProducer):
         if self._sample_index >= len(self.expected_outputs):
             self._epoch += 1
             self._sample_index = 0
-        
+
         self._zero_grad()
         self._current_inputs = self.inputs[self._sample_index]
 
@@ -193,9 +202,10 @@ class SimpleNeuralNetwork(BaseProducer):
         for layer in self.layers:
             outputs: List[float] = []
             for neuron in layer.neurons:
-                z = sum(
-                    w * x for w, x in zip(neuron.weights, current_inputs)
-                ) + neuron.bias
+                z = (
+                    sum(w * x for w, x in zip(neuron.weights, current_inputs))
+                    + neuron.bias
+                )
                 outputs.append(neuron.activation_function.compute(z))
             current_inputs = outputs
 

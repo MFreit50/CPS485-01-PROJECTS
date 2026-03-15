@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Activation(ABC):
     """
     Base Class for activation functions
