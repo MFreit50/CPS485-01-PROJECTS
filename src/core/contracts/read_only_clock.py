@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class ReadOnlyClock(ABC):
     """
     Abstract base class for read-only clock implementations

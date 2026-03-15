@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from src.core.contracts.trace_entry import TraceEntry
 from src.core.contracts.event import Event
+from src.core.contracts.trace_entry import TraceEntry
+
 
 class RunnerTracer(ABC):
     """
-        Contract for recording the execution trace of a Runner.
-        Responsibilities:
-        - Record each timestamp of the execution with associated events
-        - Provide access to the complete trace log for analysis
+    Contract for recording the execution trace of a Runner.
+    Responsibilities:
+    - Record each timestamp of the execution with associated events
+    - Provide access to the complete trace log for analysis
     """
 
     @abstractmethod

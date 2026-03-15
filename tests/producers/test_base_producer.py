@@ -1,10 +1,11 @@
 import pytest
 
-from src.core.time.simple_clock import SimpleClock
-from src.core.errors import InvalidLifecycleError
-from src.producers.base.base_producer import BaseProducer
 from src.core.contracts.event import Event
+from src.core.errors import InvalidLifecycleError
+from src.core.time.simple_clock import SimpleClock
+from src.producers.base.base_producer import BaseProducer
 from tests.conftest import DummyEvent
+
 
 class DummyProducer(BaseProducer):
     def __init__(self, clock):
@@ -21,6 +22,7 @@ class DummyProducer(BaseProducer):
 
         return event
 
+
 def test_producer_lifecycle():
     clock = SimpleClock()
     producer = DummyProducer(clock)
@@ -31,6 +33,7 @@ def test_producer_lifecycle():
     producer.start()
     event = producer.step(timestamp=0)
     assert event is not None
+
 
 def test_producer_finishes():
     clock = SimpleClock()

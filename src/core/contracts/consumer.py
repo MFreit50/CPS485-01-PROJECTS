@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from .event import Event
+
 
 class Consumer(ABC):
     """

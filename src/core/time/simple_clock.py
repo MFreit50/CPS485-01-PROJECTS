@@ -1,6 +1,8 @@
+from src.core.contracts.clock import Clock
 from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.time._read_only_clock_wrapper import _ReadOnlyClockWrapper
-from src.core.contracts.clock import Clock
+
+
 class SimpleClock(Clock):
     """
     A simple implementation of the Clock contract that tracks steps.
@@ -25,7 +27,7 @@ class SimpleClock(Clock):
             The current step value.
         """
         return self._time
-    
+
     def as_read_only(self) -> ReadOnlyClock:
         """
         Get a read-only view of this clock.
