@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from src.core.contracts.event import Event
+
 
 @dataclass(frozen=True)
 class TraceEntry:
@@ -11,6 +13,7 @@ class TraceEntry:
         producer_id (str): The unique identifier of the producer
         timestamp (int): The logical clock time when the event occurred
     """
+
     event: Event
     producer_id: str
     timestamp: int

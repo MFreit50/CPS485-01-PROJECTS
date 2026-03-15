@@ -1,8 +1,9 @@
-from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.contracts.clock import Clock
+from src.core.contracts.read_only_clock import ReadOnlyClock
+
 
 class _ReadOnlyClockWrapper(ReadOnlyClock):
-    def __init__(self, clock : Clock) -> None:
+    def __init__(self, clock: Clock) -> None:
         """
         A wrapper around a Clock instance that provides read-only access to the current time.
         """

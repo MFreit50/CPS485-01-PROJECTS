@@ -1,6 +1,7 @@
 from src.core.contracts.read_only_clock import ReadOnlyClock
-from src.producers.base.base_producer import BaseProducer
 from src.core.events.counter.counter_number import CounterNumber
+from src.producers.base.base_producer import BaseProducer
+
 
 class CounterProducer(BaseProducer):
     """
@@ -8,7 +9,7 @@ class CounterProducer(BaseProducer):
     emitting an event at each step.
     """
 
-    def __init__(self, *, clock : ReadOnlyClock, limit: int) -> None:
+    def __init__(self, *, clock: ReadOnlyClock, limit: int) -> None:
         """
         Args:
             clock (ReadOnlyClock): The read-only clock instance to track steps.
@@ -19,7 +20,7 @@ class CounterProducer(BaseProducer):
 
     def _on_start(self) -> None:
         self._index = 0
-    
+
     def _step(self, timestamp: int) -> CounterNumber:
         """
         Execute a single counting step.
@@ -34,14 +35,12 @@ class CounterProducer(BaseProducer):
         """
 
         event = CounterNumber(
-            timestamp=timestamp,
-            producer_id=self._producer_id,
-            value=self._index
+            timestamp=timestamp, producer_id=self._producer_id, value=self._index
         )
 
         self._index += 1
 
         if self._index >= self._limit:
             self._finished = True
-        
+
         return event

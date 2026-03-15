@@ -1,8 +1,9 @@
 from typing import List
 
+from src.core.contracts.event import Event
 from src.core.contracts.runner_tracer import RunnerTracer
 from src.core.contracts.trace_entry import TraceEntry
-from src.core.contracts.event import Event
+
 
 class SimpleRunnerTracer(RunnerTracer):
     """
@@ -25,7 +26,7 @@ class SimpleRunnerTracer(RunnerTracer):
         """
         entry = TraceEntry(event=event, producer_id=producer_id, timestamp=timestamp)
         self._trace_log.append(entry)
-    
+
     def get_trace(self) -> List[TraceEntry]:
         """
         Get the copy of the trace log generated so far.

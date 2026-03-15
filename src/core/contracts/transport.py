@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from .event import Event
+
 from .consumer import Consumer
+from .event import Event
+
 
 class Transport(ABC):
     """
@@ -16,7 +18,7 @@ class Transport(ABC):
         Publish an event to all subscribed consumers.
         Args:
             event (Event): The event to be published
-        
+
         Raises:
             InvalidEventError: if the event is invalid.
         """

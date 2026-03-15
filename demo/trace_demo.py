@@ -1,11 +1,12 @@
+from src.consumers.examples.print_consumer import PrintConsumer
+from src.core.execution.simple_runner import SimpleRunner
 from src.core.time.simple_clock import SimpleClock
+from src.core.trace.simple_runner_tracer import SimpleRunnerTracer
 from src.producers.examples.counter_producer import CounterProducer
 from src.producers.examples.fibonacci_producer import FibonacciProducer
 from src.producers.examples.random_producer import SeededRandomProducer
-from src.consumers.examples.print_consumer import PrintConsumer
 from src.transport.in_memory.in_memory_transport import InMemoryTransport
-from src.core.trace.simple_runner_tracer import SimpleRunnerTracer
-from src.core.execution.simple_runner import SimpleRunner
+
 
 def main():
     clock = SimpleClock()
@@ -23,7 +24,9 @@ def main():
 
     producers = [counter_producer, fibonacci_producer, random_producer]
 
-    runner = SimpleRunner(clock=clock, producers=producers, transport=transport, tracer=tracer)
+    runner = SimpleRunner(
+        clock=clock, producers=producers, transport=transport, tracer=tracer
+    )
 
     print("\n--- Running all producers with tracing ---")
     runner.run()
@@ -31,6 +34,7 @@ def main():
     print("\n--- Trace Entries ---")
     for entry in tracer.get_trace():
         print(entry)
+
 
 if __name__ == "__main__":
     main()
