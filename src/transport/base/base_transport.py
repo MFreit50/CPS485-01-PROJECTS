@@ -37,10 +37,25 @@ class BaseTransport(Transport, ABC):
         return self._consumers.copy()
 
     def publish(self, event: Event) -> None:
+        """
+        Adds an event to the internal queue to be processed by worker threads.
+        Args:
+            event (Event): The event to be published
+        Raises:
+            InvalidEventError: if the event is invalid.
+            InvalidLifecycleError: if there are no consumers subscribed.
+        """
+        self._validate_event(event)
+        self._dispatch_event(event)
+
+    def _validate_event(self, event: Event) -> None:
+        """Validate the event before publishing."""
         if not isinstance(event, Event):
             raise InvalidEventError("Invalid event type.")
         if not self._consumers:
             raise InvalidLifecycleError("No consumers subscribed to receive events.")
 
+    def _dispatch_event(self, event: Event) -> None:
+        """Internal method to dispatch an event to all consumers."""
         for consumer in self._consumers:
             consumer.on_event(event)
