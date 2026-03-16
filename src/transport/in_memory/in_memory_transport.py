@@ -44,7 +44,7 @@ class InMemoryTransport(BaseTransport):
             except queue.Empty:
                 continue
 
-            super().publish(event)
+            self._dispatch_event(event)
             self._queue.task_done()
 
     def publish(self, event: Event) -> None:
@@ -56,6 +56,8 @@ class InMemoryTransport(BaseTransport):
             InvalidEventError: if the event is invalid.
             InvalidLifecycleError: if there are no consumers subscribed.
         """
+
+        self._validate_event(event)
         self._queue.put(event)
 
     def shutdown(self) -> None:
