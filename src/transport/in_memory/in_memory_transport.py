@@ -60,6 +60,12 @@ class InMemoryTransport(BaseTransport):
         self._validate_event(event)
         self._queue.put(event)
 
+    def flush(self) -> None:
+        """
+        Wait until all events in the queue have been processed.
+        """
+        self._queue.join()
+
     def shutdown(self) -> None:
         """
         Stop all worker threads gracefully.
