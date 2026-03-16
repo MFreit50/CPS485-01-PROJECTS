@@ -9,8 +9,7 @@ from src.transport.base.base_transport import BaseTransport
 class InMemoryTransport(BaseTransport):
     """
     In-memory transport mechanism for moving events from producers to consumers asynchronously.
-    - Delivers events to all subscribed consumers immediately upon publishing
-
+    - Delivers events to consumers using a thread pool and an internal queue.
     """
 
     def __init__(self, number_of_workers: int = 1) -> None:
