@@ -14,13 +14,11 @@ class Neuron:
     def __init__(
         self,
         num_inputs: int,
-        activation_function: Activation,
         rng: random.Random | None = None,
     ):
         self.id = f"{self.__class__.__name__}_{Neuron._counter}"
         Neuron._counter += 1
 
-        self.activation_function: Activation = activation_function
         rng = rng or random.Random()
         self.weights: List[float] = [rng.uniform(-0.5, 0.5) for _ in range(num_inputs)]
         self.bias: float = rng.uniform(-0.5, 0.5)
@@ -35,7 +33,9 @@ class Neuron:
         self.grad_weights: List[float] = []
         self.grad_bias: float = 0.0
 
-    def forward(self, inputs: List[float]) -> NeuronForwardStepResult:
+    def forward(
+        self, inputs: List[float], activation_function: Activation
+    ) -> NeuronForwardStepResult:
         if len(inputs) != len(self.weights):
             raise ValueError(
                 f"Neuron {self.id} expected {len(self.weights)} inputs but got {len(inputs)}"
@@ -46,7 +46,7 @@ class Neuron:
             weighted_sum += W * x
 
         z = weighted_sum + self.bias
-        a = self.activation_function.compute(z)
+        a = activation_function.compute(z)
 
         self.last_inputs = inputs.copy()
         self.last_z = z
@@ -61,13 +61,15 @@ class Neuron:
             activation=a,
         )
 
-    def backward(self, gradient: float) -> NeuronBackwardStepResult:
+    def backward(
+        self, gradient: float, activation_function: Activation
+    ) -> NeuronBackwardStepResult:
         if len(self.last_inputs) != len(self.weights):
             raise ValueError(
                 f"Neuron {self.id} expected {len(self.weights)} inputs but got {len(self.last_inputs)}"
             )
 
-        dz = self.activation_function.derivative(self.last_a)
+        dz = activation_function.derivative(self.last_a)
         self.delta = gradient * dz
         dW = [self.delta * x for x in self.last_inputs]
         dx = [self.delta * W for W in self.weights]

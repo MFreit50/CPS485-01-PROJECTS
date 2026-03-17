@@ -1,6 +1,7 @@
 from typing import ClassVar, List
 
 from src.core.errors import InvalidLifecycleError
+from src.producers.nn.activations.base import Activation
 from src.producers.nn.models.layer_backward_step_result import LayerBackwardStepResult
 from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
 from src.producers.nn.models.layer_update_step_result import LayerUpdateStepResult
@@ -14,14 +15,15 @@ class Layer:
 
     _counter: ClassVar[int] = 0
 
-    def __init__(self, neurons: List[Neuron]):
+    def __init__(self, neurons: List[Neuron], activation_function: Activation):
         if not neurons:
             raise ValueError("Layer must contain at least one neuron")
 
         self.id = f"{self.__class__.__name__}_{Layer._counter}"
         Layer._counter += 1
 
-        self.neurons = neurons
+        self.neurons: List[Neuron] = neurons
+        self.activation_function: Activation = activation_function
 
         self._is_complete = False
         self._neuron_index: int = 0
@@ -35,7 +37,9 @@ class Layer:
         neuron = self.neurons[self._neuron_index]
         self._neuron_index += 1
 
-        result: NeuronForwardStepResult = neuron.forward(inputs)
+        result: NeuronForwardStepResult = neuron.forward(
+            inputs, self.activation_function
+        )
         self.outputs.append(result.activation)
 
         if self._neuron_index >= len(self.neurons):
@@ -55,7 +59,9 @@ class Layer:
         gradient: float = grad_inputs[len(grad_inputs) - self._neuron_index - 1]
         self._neuron_index += 1
 
-        result: NeuronBackwardStepResult = neuron.backward(gradient)
+        result: NeuronBackwardStepResult = neuron.backward(
+            gradient, self.activation_function
+        )
 
         if not self.grad_inputs:
             self.grad_inputs = [0.0] * len(result.grad_inputs)
