@@ -7,6 +7,6 @@ class SaveToDBConsumer(AsynchronousConsumer):
 
     async def _handle(self, event):
         # Simulate saving to a database
-        print(f"Saving event to the database...")
+        print("Saving event to the database...")
         await asyncio.sleep(1)  # Simulate I/O delay
         print(f"Event {event} saved to the database.")

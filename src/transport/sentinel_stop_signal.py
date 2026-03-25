@@ -1,5 +1,3 @@
-from typing import Any
-
 from src.core.contracts.event import Event
 
 
