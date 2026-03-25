@@ -1,52 +1,65 @@
-import queue
-import threading
+import asyncio
+import logging
 from typing import List
 
 from src.core.contracts.event import Event
-from src.transport.base.base_transport import BaseTransport
+from src.transport.base.base_transport import BaseTransport, TransportState
+from src.transport.sentinel_stop_signal import SentinelStopSignal
+
+_STOP = SentinelStopSignal()
+logger = logging.getLogger(__name__)
 
 
 class InMemoryTransport(BaseTransport):
     """
     In-memory transport mechanism for moving events from producers to consumers asynchronously.
-    - Delivers events to consumers using a thread pool and an internal queue.
+    - Delivers events to subscribed consumers using an internal asyncio queue and worker tasks.
     """
 
     def __init__(self, number_of_workers: int = 1) -> None:
         super().__init__()
 
-        self.number_of_workers = number_of_workers
-        self._queue: queue.Queue[Event] = queue.Queue()
-        self._workers: List[threading.Thread] = []
-        self._stop_event = threading.Event()
+        self._number_of_workers = number_of_workers
+        self._queue: asyncio.Queue[Event] = asyncio.Queue(maxsize=10000)
+        self._tasks: List[asyncio.Task] = []
 
-        self._start_workers()
-
-    def _start_workers(self) -> None:
+    async def start(self) -> None:
         """
-        Start worker threads to process events from the queue.
+        Start worker tasks to process events from the queue.
         """
-        for i in range(self.number_of_workers):
-            worker = threading.Thread(
-                target=self._worker_loop, name=f"InMemoryWorker-{i}", daemon=True
+        await super().start()
+        for i in range(self._number_of_workers):
+            task = asyncio.create_task(
+                self._worker_loop(worker_id=i), name=f"InMemoryWorker-{i}"
             )
-            worker.start()
-            self._workers.append(worker)
+            self._tasks.append(task)
 
-    def _worker_loop(self) -> None:
+    async def _worker_loop(self, worker_id: int) -> None:
         """
-        Worker thread loop to process events from the queue and publish them to consumers.
+        Worker task loop to process events from the queue and publish them to consumers.
         """
-        while not self._stop_event.is_set():
+        while True:
+            event: Event = await self._queue.get()
+
+            if event is _STOP:
+                self._queue.task_done()
+                logger.debug(
+                    "Worker received stop signal, exiting.",
+                    extra={"worker_id": worker_id},
+                )
+                return
+
             try:
-                event: Event = self._queue.get(timeout=0.1)
-            except queue.Empty:
-                continue
+                await self._dispatch_event(event)
+            except Exception as e:
+                logger.error(
+                    f"Error occurred while dispatching event: {e}",
+                    extra={"worker_id": worker_id, "event": event},
+                )
+            finally:
+                self._queue.task_done()
 
-            self._dispatch_event(event)
-            self._queue.task_done()
-
-    def publish(self, event: Event) -> None:
+    async def publish(self, event: Event) -> None:
         """
         Adds an event to the internal queue to be processed by worker threads.
         Args:
@@ -56,19 +69,24 @@ class InMemoryTransport(BaseTransport):
             InvalidLifecycleError: if there are no consumers subscribed.
         """
 
-        self._validate_event(event)
-        self._queue.put(event)
+        self._validate_transport_request(event)
+        await self._queue.put(event)
 
-    def flush(self) -> None:
+    async def flush(self) -> None:
         """
         Wait until all events in the queue have been processed.
         """
-        self._queue.join()
+        await self._queue.join()
 
-    def shutdown(self) -> None:
+    async def shutdown(self) -> None:
         """
-        Stop all worker threads gracefully.
+        Stop all worker tasks gracefully.
         """
-        self._stop_event.set()
-        for worker in self._workers:
-            worker.join()
+        await super().shutdown()
+        await self.flush()
+        for _ in range(self._number_of_workers):
+            await self._queue.put(_STOP)
+
+        await asyncio.gather(*self._tasks, return_exceptions=True)
+        self._tasks.clear()
+        self._state = TransportState.FINISHED

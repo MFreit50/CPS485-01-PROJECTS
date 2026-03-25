@@ -1,10 +1,22 @@
+import asyncio
+import logging
 from abc import ABC
+from enum import Enum
 from typing import List
 
 from src.core.contracts.consumer import Consumer
 from src.core.contracts.event import Event
 from src.core.contracts.transport import Transport
 from src.core.errors import InvalidEventError, InvalidLifecycleError
+
+logger = logging.getLogger(__name__)
+
+
+class TransportState(Enum):
+    INITIAL = 0
+    RUNNING = 1
+    SHUTTING_DOWN = 2
+    FINISHED = 3
 
 
 class BaseTransport(Transport, ABC):
@@ -19,6 +31,22 @@ class BaseTransport(Transport, ABC):
 
     def __init__(self) -> None:
         self._consumers: List[Consumer] = []
+        self._state = TransportState.INITIAL
+
+    async def start(self) -> None:
+        """
+        Base start method. Can be overridden by subclasses if needed.
+        """
+        if self._state != TransportState.INITIAL:
+            raise InvalidLifecycleError("Transport has already been started.")
+
+        self._state = TransportState.RUNNING
+
+    async def shutdown(self) -> None:
+        if self._state != TransportState.RUNNING:
+            raise InvalidLifecycleError("Transport is not running.")
+
+        self._state = TransportState.SHUTTING_DOWN
 
     def subscribe(self, consumer: Consumer) -> None:
         if consumer in self._consumers:
@@ -31,12 +59,7 @@ class BaseTransport(Transport, ABC):
         except ValueError:
             raise InvalidLifecycleError("Consumer is not subscribed.")
 
-    @property
-    def consumers(self) -> List[Consumer]:
-        """Read-only access to the list of subscribed consumers."""
-        return self._consumers.copy()
-
-    def publish(self, event: Event) -> None:
+    async def publish(self, event: Event) -> None:
         """
         Adds an event to the internal queue to be processed by worker threads.
         Args:
@@ -45,17 +68,38 @@ class BaseTransport(Transport, ABC):
             InvalidEventError: if the event is invalid.
             InvalidLifecycleError: if there are no consumers subscribed.
         """
-        self._validate_event(event)
-        self._dispatch_event(event)
 
-    def _validate_event(self, event: Event) -> None:
+        self._validate_transport_request(event)
+        await self._dispatch_event(event)
+
+    def _validate_transport_request(self, event: Event) -> None:
         """Validate the event before publishing."""
+        if self._state != TransportState.RUNNING:
+            raise InvalidLifecycleError("Transport is not running.")
         if not isinstance(event, Event):
             raise InvalidEventError("Invalid event type.")
         if not self._consumers:
             raise InvalidLifecycleError("No consumers subscribed to receive events.")
 
-    def _dispatch_event(self, event: Event) -> None:
+    async def _dispatch_event(self, event: Event) -> None:
         """Internal method to dispatch an event to all consumers."""
-        for consumer in self._consumers:
-            consumer.on_event(event)
+        results = await asyncio.gather(
+            *(consumer.on_event(event) for consumer in self._consumers),
+            return_exceptions=True,
+        )
+
+        for consumer, result in zip(self._consumers, results):
+            if isinstance(result, Exception):
+                logger.exception(
+                    "Consumer raised an unhandled exception. This is a bug",
+                    exc_info=result,
+                    extra={
+                        "consumer": consumer.__class__.__name__,
+                        "event_type": event.__class__.__name__,
+                    },
+                )
+
+    @property
+    def consumers(self) -> List[Consumer]:
+        """Read-only access to the list of subscribed consumers."""
+        return self._consumers.copy()
