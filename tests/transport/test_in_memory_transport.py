@@ -31,32 +31,50 @@ def test_duplicate_subscription_raises(dummy_consumer):
         transport.subscribe(dummy_consumer)
 
 
-def test_publish_invalid_event_raises():
+@pytest.mark.asyncio
+async def test_publish_invalid_event_raises():
     transport = InMemoryTransport()
+    await transport.start()
     with pytest.raises(InvalidEventError):
-        transport.publish("not an event")  # type: ignore
+        await transport.publish("not an event")  # type: ignore
 
 
-def test_publish_with_consumers(dummy_consumer, dummy_event):
+@pytest.mark.asyncio
+async def test_publish_with_consumers(dummy_consumer, dummy_event):
     transport = InMemoryTransport()
     transport.subscribe(dummy_consumer)
-    transport.publish(dummy_event)
-    transport.flush()
+    await transport.start()
+    await transport.publish(dummy_event)
+    await transport.flush()
     assert dummy_event in dummy_consumer.received_events
 
 
-def test_publish_multiple_consumers(dummy_consumer, dummy_event):
+@pytest.mark.asyncio
+async def test_publish_multiple_consumers(dummy_consumer, dummy_event):
     transport = InMemoryTransport()
     another_consumer = DummyConsumer()
     transport.subscribe(dummy_consumer)
     transport.subscribe(another_consumer)
-    transport.publish(dummy_event)
-    transport.flush()
+    await transport.start()
+    await transport.publish(dummy_event)
+    await transport.flush()
     assert dummy_event in dummy_consumer.received_events
     assert dummy_event in another_consumer.received_events
 
 
-def test_publish_without_consumers_raises(dummy_event):
+@pytest.mark.asyncio
+async def test_publish_without_consumers_raises(dummy_event):
     transport = InMemoryTransport()
+    await transport.start()
     with pytest.raises(InvalidLifecycleError):
-        transport.publish(dummy_event)
+        await transport.publish(dummy_event)
+
+
+@pytest.mark.asyncio
+async def test_shutdown_cleans_up_workers(dummy_consumer, dummy_event):
+    transport = InMemoryTransport(number_of_workers=2)
+    transport.subscribe(dummy_consumer)
+    await transport.start()
+    await transport.publish(dummy_event)
+    await transport.shutdown()
+    assert len(transport._tasks) == 0
