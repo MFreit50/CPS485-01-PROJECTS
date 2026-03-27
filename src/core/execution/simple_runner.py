@@ -1,119 +1,23 @@
-from typing import List, Optional
+from typing import Optional
 
 from src.core.contracts.clock import Clock
-from src.core.contracts.producer import Producer
-from src.core.contracts.runner import Runner
 from src.core.contracts.runner_tracer import RunnerTracer
 from src.core.contracts.transport import Transport
-from src.core.errors import InvalidLifecycleError
+from src.core.execution.base.base_runner import BaseRunner
 
 
-class SimpleRunner(Runner):
+class SimpleRunner(BaseRunner):
     """
     SimpleRunner is a straightforward implementation
-    of the Runner interface that executes producers in a
-    single-threaded, synchronous manner.
+    of the Runner interface that executes producers
+    sequentially in a single thread.
     """
 
     def __init__(
         self,
         *,
         clock: Clock,
-        producers: List[Producer],
         transport: Transport,
         tracer: Optional[RunnerTracer] = None
     ) -> None:
-        if not producers:
-            raise InvalidLifecycleError("SimpleRunner requires at least one producer.")
-
-        if len(set(producers)) != len(producers):
-            raise InvalidLifecycleError("SimpleRunner received duplicate producers.")
-
-        self._clock = clock
-        self._producers: List[Producer] = list(producers)
-        self._transport = transport
-        self._tracer = tracer
-
-        self._started = False
-        self._finished = False
-        self._timestamp: int = 0
-
-    async def start(self) -> None:
-        """
-        Initialize the runner and all producers.
-        Must be called before step().
-        Raises:
-            InvalidLifecycleError: if called more than once
-        """
-        if self._started:
-            raise InvalidLifecycleError("SimpleRunner.start() called more than once.")
-
-        self._started = True
-        self._finished = False
-        self._timestamp = 0
-
-        for producer in self._producers:
-            producer.start()
-
-        await self._transport.start()
-
-    async def step(self) -> None:
-        """
-        Execute a single step for all producers.
-
-        One step involves:
-        - ticking the clock
-        - stepping each active producer
-        - publishing any generated events
-
-        Raises:
-            InvalidLifecycleError:
-                - if step() is called before run()
-                - if step() is called after completion
-        """
-
-        if not self._started:
-            raise InvalidLifecycleError("SimpleRunner.step() called before run().")
-        if self._finished:
-            raise InvalidLifecycleError("SimpleRunner.step() called after completion.")
-
-        for producer in self._producers:
-            if producer.is_finished():
-                continue
-
-            event = producer.step(self._timestamp)
-
-            if event is not None:
-                await self._transport.publish(event)
-                if self._tracer:
-                    self._tracer.record_step(
-                        producer_id=producer.producer_id,
-                        event=event,
-                        timestamp=self._timestamp,
-                    )
-
-            self._timestamp = self._clock.tick()
-
-        if self._all_finished():
-            self._finished = True
-
-    async def run(self) -> None:
-        """Run all producers until completion."""
-
-        if not self._started:
-            await self.start()
-
-        while not self.is_finished():
-            await self.step()
-
-    def is_finished(self) -> bool:
-        """
-        Check if all producers have completed execution.
-        Returns:
-            True if all producers are finished, else False
-        """
-        return self._finished
-
-    def _all_finished(self) -> bool:
-        """Check if all producers have finished."""
-        return all(producer.is_finished() for producer in self._producers)
+        super().__init__(clock=clock, transport=transport, tracer=tracer)
