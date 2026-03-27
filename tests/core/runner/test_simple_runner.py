@@ -13,9 +13,8 @@ async def test_runner_records_trace(counter_producer, dummy_consumer):
     tracer = SimpleRunnerTracer()
     transport.subscribe(dummy_consumer)
 
-    runner = SimpleRunner(
-        clock=clock, producers=[counter_producer], transport=transport, tracer=tracer
-    )
+    runner = SimpleRunner(clock=clock, transport=transport, tracer=tracer)
+    runner.add_producer(counter_producer)
 
     await runner.run()
 

@@ -15,10 +15,10 @@ class DummyProducer(BaseProducer):
     def _step(self, timestamp: int) -> Event:
         self._count += 1
 
-        event = DummyEvent(timestamp=timestamp, producer_id=self._producer_id)
+        event = DummyEvent(timestamp=timestamp, producer_id=self.producer_id)
 
         if self._count >= 2:
-            self._finished = True
+            self._mark_finished()
 
         return event
 
