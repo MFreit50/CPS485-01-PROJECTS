@@ -10,3 +10,7 @@ class SentinelStopSignal(Event):
 
     def __init__(self, timestamp=0, producer_id="sentinel_stop_signal"):
         super().__init__(timestamp=timestamp, producer_id=producer_id)
+
+    @property
+    def event_id(self) -> str:
+        return "sentinel_stop_signal"
