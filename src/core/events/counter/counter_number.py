@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 from src.core.events.base.base_event import BaseEvent
 
