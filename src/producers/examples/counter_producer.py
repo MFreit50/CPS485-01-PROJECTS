@@ -35,12 +35,12 @@ class CounterProducer(BaseProducer):
         """
 
         event = CounterNumber(
-            timestamp=timestamp, producer_id=self._producer_id, value=self._index
+            timestamp=timestamp, producer_id=self.producer_id, value=self._index
         )
 
         self._index += 1
 
         if self._index >= self._limit:
-            self._finished = True
+            self._mark_finished()
 
         return event
