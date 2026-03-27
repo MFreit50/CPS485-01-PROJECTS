@@ -1,16 +1,19 @@
 import logging
 from abc import abstractmethod
 
-from src.core.contracts.consumer import Consumer
+from src.consumers.base.base_consumer import BaseConsumer
 from src.core.contracts.event import Event
 
 logger = logging.getLogger(__name__)
 
 
-class SynchronousConsumer(Consumer):
+class SynchronousConsumer(BaseConsumer):
     """
     A synchronous consumer that processes events in a blocking manner.
     """
+
+    def __init__(self):
+        super().__init__()
 
     async def on_event(self, event: Event) -> None:
         """
@@ -34,12 +37,3 @@ class SynchronousConsumer(Consumer):
             event (Event): The event to be handled
         """
         pass
-
-    @property
-    def consumer_id(self) -> str:
-        """
-        Unique identifier for the consumer, defaulting to the class name.
-        Returns:
-            str: The unique consumer ID
-        """
-        return self.__class__.__name__
