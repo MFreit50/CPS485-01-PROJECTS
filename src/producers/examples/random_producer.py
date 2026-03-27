@@ -40,7 +40,7 @@ class SeededRandomProducer(BaseProducer):
         random_value = self._random.random()
 
         event = RandomNumber(
-            timestamp=timestamp, producer_id=self._producer_id, value=random_value
+            timestamp=timestamp, producer_id=self.producer_id, value=random_value
         )
         self._index += 1
 

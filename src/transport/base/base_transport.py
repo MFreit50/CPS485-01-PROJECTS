@@ -8,6 +8,7 @@ from src.core.contracts.consumer import Consumer
 from src.core.contracts.event import Event
 from src.core.contracts.transport import Transport
 from src.core.errors import InvalidEventError, InvalidLifecycleError
+from src.core.id.identifiable import Identifiable
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class TransportState(Enum):
     FINISHED = 3
 
 
-class BaseTransport(Transport, ABC):
+class BaseTransport(Transport, Identifiable, ABC):
     """
     Base implementation for all transport mechanisms.
 
@@ -30,6 +31,8 @@ class BaseTransport(Transport, ABC):
     """
 
     def __init__(self) -> None:
+        Transport.__init__(self)
+        Identifiable.__init__(self)
         self._consumers: List[Consumer] = []
         self._state = TransportState.INITIAL
 
@@ -98,6 +101,15 @@ class BaseTransport(Transport, ABC):
                         "event_type": event.__class__.__name__,
                     },
                 )
+
+    @property
+    def transport_id(self) -> str:
+        """
+        Unique identifier for the transport mechanism
+        Returns:
+            str: The unique transport ID
+        """
+        return self.id
 
     @property
     def consumers(self) -> List[Consumer]:

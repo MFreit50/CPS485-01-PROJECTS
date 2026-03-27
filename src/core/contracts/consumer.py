@@ -13,6 +13,7 @@ class Consumer(ABC):
 
     """
 
+    @abstractmethod
     async def on_event(self, event: Event) -> None:
         """
         Handles a single event emitted by a producer.

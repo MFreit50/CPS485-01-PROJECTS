@@ -1,13 +1,20 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
+from enum import Enum
 
 from src.core.contracts.event import Event
 from src.core.contracts.producer import Producer
 from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.errors import InvalidLifecycleError
+from src.core.id.identifiable import Identifiable
 
 
-class BaseProducer(Producer, ABC):
+class ProducerState(Enum):
+    INITIAL = 0
+    RUNNING = 1
+    FINISHED = 2
+
+
+class BaseProducer(Producer, Identifiable, ABC):
     """
     Base implementation for all event producers.
 
@@ -16,23 +23,21 @@ class BaseProducer(Producer, ABC):
     - clock availability
     """
 
-    _counter: ClassVar[int] = 0
-
     def __init__(self, *, clock: ReadOnlyClock) -> None:
+        Producer.__init__(self)
+        Identifiable.__init__(self)
+
         self._clock = clock
-
-        self._started = False
-        self._finished = False
-
-        self._producer_id = f"{self.__class__.__name__}_{BaseProducer._counter}"
-        BaseProducer._counter += 1
+        self._state = ProducerState.INITIAL
 
     @property
     def producer_id(self) -> str:
         """
-        Unique identifier for the producer instance.
+        Unique identifier for the producer
+        Returns:
+            str: The unique producer ID
         """
-        return self._producer_id
+        return self.id
 
     def start(self) -> None:
         """
@@ -41,11 +46,10 @@ class BaseProducer(Producer, ABC):
         Raises:
             InvalidLifecycleError: if called more than once
         """
-        if self._started:
+        if self._state != ProducerState.INITIAL:
             raise InvalidLifecycleError("Producer.start() called more than once.")
 
-        self._started = True
-        self._finished = False
+        self._state = ProducerState.RUNNING
         self._on_start()
 
     def step(self, timestamp: int) -> Event:
@@ -62,23 +66,27 @@ class BaseProducer(Producer, ABC):
                 - if step() is called after completion
         """
 
-        if not self._started:
-            raise InvalidLifecycleError("Producer.step() called before start().")
-        if self._finished:
-            raise InvalidLifecycleError("Producer.step() called after completion.")
+        if self._state != ProducerState.RUNNING:
+            raise InvalidLifecycleError(
+                "Producer.step() called before start() or after completion."
+            )
 
-        event = self._step(timestamp)
-
-        if self.is_finished():
-            self._finished = True
+        event: Event = self._step(timestamp)
 
         return event
+
+    def _mark_finished(self) -> None:
+        """
+        Mark the producer as finished.
+        Should be called by subclasses when they determine they are done.
+        """
+        self._state = ProducerState.FINISHED
 
     def is_finished(self) -> bool:
         """
         Returns True if the producer is finished.
         """
-        return self._finished
+        return self._state == ProducerState.FINISHED
 
     @property
     def clock(self) -> ReadOnlyClock:

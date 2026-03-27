@@ -36,7 +36,7 @@ class FibonacciProducer(BaseProducer):
         """
 
         event = FibonacciNumber(
-            timestamp=timestamp, producer_id=self._producer_id, value=self.previous
+            timestamp=timestamp, producer_id=self.producer_id, value=self.previous
         )
         # Generate the next Fibonacci number
         self.previous, self.current = (self.current, self.previous + self.current)
@@ -44,6 +44,6 @@ class FibonacciProducer(BaseProducer):
         self._index += 1
 
         if self._index >= self._limit:
-            self._finished = True
+            self._mark_finished()
 
         return event

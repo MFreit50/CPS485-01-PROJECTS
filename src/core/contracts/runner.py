@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from src.core.contracts.producer import Producer
+
 
 class Runner(ABC):
     """
@@ -40,10 +42,31 @@ class Runner(ABC):
         pass
 
     @abstractmethod
+    def add_producer(self, producer: Producer) -> None:
+        """
+        Add a producer to the execution process.
+        Args:
+            producer (Producer): The producer to add
+        Raises:
+            InvalidLifecycleError: if called after start()
+        """
+        pass
+
+    @abstractmethod
     def is_finished(self) -> bool:
         """
         Check if the execution process has completed.
         Returns:
             True if finished, else False
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def runner_id(self) -> str:
+        """
+        Unique identifier for the runner instance.
+        Returns:
+            str: The unique runner ID
         """
         pass

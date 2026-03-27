@@ -13,16 +13,6 @@ class Producer(ABC):
 
     """
 
-    @property
-    @abstractmethod
-    def producer_id(self) -> str:
-        """
-        Unique identifier for the producer
-        Returns:
-            str: The unique producer ID
-        """
-        pass
-
     @abstractmethod
     def start(self) -> None:
         """
@@ -55,5 +45,15 @@ class Producer(ABC):
         Check if the algorithm has completed execution
         Returns:
             True if finished, else False
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def producer_id(self) -> str:
+        """
+        Unique identifier for the producer
+        Returns:
+            str: The unique producer ID
         """
         pass

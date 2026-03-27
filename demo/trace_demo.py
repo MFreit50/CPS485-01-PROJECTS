@@ -1,3 +1,5 @@
+import asyncio
+
 from src.consumers.examples.print_consumer import PrintConsumer
 from src.core.execution.simple_runner import SimpleRunner
 from src.core.time.simple_clock import SimpleClock
@@ -8,7 +10,7 @@ from src.producers.examples.random_producer import SeededRandomProducer
 from src.transport.in_memory.in_memory_transport import InMemoryTransport
 
 
-def main():
+async def main():
     clock = SimpleClock()
     transport = InMemoryTransport()
     consumer = PrintConsumer()
@@ -22,14 +24,13 @@ def main():
     fibonacci_producer = FibonacciProducer(clock=read_only_clock, limit=10)
     random_producer = SeededRandomProducer(clock=read_only_clock, limit=5, seed=42)
 
-    producers = [counter_producer, fibonacci_producer, random_producer]
-
-    runner = SimpleRunner(
-        clock=clock, producers=producers, transport=transport, tracer=tracer
-    )
+    runner = SimpleRunner(clock=clock, transport=transport, tracer=tracer)
+    runner.add_producer(counter_producer)
+    runner.add_producer(fibonacci_producer)
+    runner.add_producer(random_producer)
 
     print("\n--- Running all producers with tracing ---")
-    runner.run()
+    await runner.run()
 
     print("\n--- Trace Entries ---")
     for entry in tracer.get_trace():
@@ -37,4 +38,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
