@@ -39,3 +39,13 @@ class Transport(ABC):
             consumer (Consumer): The consumer to subscribe
         """
         pass
+
+    @property
+    @abstractmethod
+    def transport_id(self) -> str:
+        """
+        Unique identifier for the transport mechanism
+        Returns:
+            str: The unique transport ID
+        """
+        pass
