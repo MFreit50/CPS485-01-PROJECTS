@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from typing import Any, Dict
 
@@ -17,6 +17,17 @@ class Event(ABC):
 
     timestamp: int
     producer_id: str
+
+    @property
+    @abstractmethod
+    def event_id(self) -> str:
+        """
+        Unique identifier for the event instance.
+        Combines producer ID and timestamp to ensure uniqueness.
+        Returns:
+            str: The unique event ID
+        """
+        pass
 
     def to_dict(self) -> Dict[str, Any]:
         """
