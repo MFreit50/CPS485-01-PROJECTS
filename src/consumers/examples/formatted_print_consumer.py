@@ -1,16 +1,16 @@
 from pprint import pprint
 
-from src.core.contracts.consumer import Consumer
+from src.consumers.base.synchronous_consumer import SynchronousConsumer
 from src.core.contracts.event import Event
 
 
-class FormattedPrintConsumer(Consumer):
+class FormattedPrintConsumer(SynchronousConsumer):
     """
     Example consumer that prints event details to the console
     in a formatted manner.
     """
 
-    def on_event(self, event: Event) -> None:
+    def _handle(self, event: Event) -> None:
         """
         Handles a single event emitted by a producer by printing its details.
         Args:

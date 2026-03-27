@@ -11,7 +11,7 @@ class Runner(ABC):
     """
 
     @abstractmethod
-    def start(self) -> None:
+    async def start(self) -> None:
         """
         Initialize the execution process
 
@@ -21,7 +21,7 @@ class Runner(ABC):
         pass
 
     @abstractmethod
-    def step(self) -> None:
+    async def step(self) -> None:
         """
         Execute a single step of the execution process
 
@@ -33,7 +33,7 @@ class Runner(ABC):
         pass
 
     @abstractmethod
-    def run(self) -> None:
+    async def run(self) -> None:
         """
         Start the execution process until completion.
         """

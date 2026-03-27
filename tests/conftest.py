@@ -1,16 +1,16 @@
 import pytest
 
-from src.core.contracts.consumer import Consumer
+from src.consumers.base.synchronous_consumer import SynchronousConsumer
 from src.core.contracts.event import Event
 from src.core.time.simple_clock import SimpleClock
 from src.producers.examples.counter_producer import CounterProducer
 
 
-class DummyConsumer(Consumer):
+class DummyConsumer(SynchronousConsumer):
     def __init__(self):
         self.received_events = []
 
-    def on_event(self, event: Event) -> None:
+    def _handle(self, event: Event) -> None:
         self.received_events.append(event)
 
 

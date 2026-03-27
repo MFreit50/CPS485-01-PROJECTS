@@ -13,11 +13,20 @@ class Consumer(ABC):
 
     """
 
-    @abstractmethod
-    def on_event(self, event: Event) -> None:
+    async def on_event(self, event: Event) -> None:
         """
         Handles a single event emitted by a producer.
         Args:
             event (Event): The event to be handled
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def consumer_id(self) -> str:
+        """
+        Unique identifier for the consumer
+        Returns:
+            str: The unique consumer ID
         """
         pass

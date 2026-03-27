@@ -10,7 +10,9 @@ from src.core.errors import InvalidLifecycleError
 
 class SimpleRunner(Runner):
     """
-    A basic synchronous runner that executes producers step by step until completion.
+    SimpleRunner is a straightforward implementation
+    of the Runner interface that executes producers in a
+    single-threaded, synchronous manner.
     """
 
     def __init__(
@@ -36,7 +38,7 @@ class SimpleRunner(Runner):
         self._finished = False
         self._timestamp: int = 0
 
-    def start(self) -> None:
+    async def start(self) -> None:
         """
         Initialize the runner and all producers.
         Must be called before step().
@@ -53,7 +55,9 @@ class SimpleRunner(Runner):
         for producer in self._producers:
             producer.start()
 
-    def step(self) -> None:
+        await self._transport.start()
+
+    async def step(self) -> None:
         """
         Execute a single step for all producers.
 
@@ -80,7 +84,7 @@ class SimpleRunner(Runner):
             event = producer.step(self._timestamp)
 
             if event is not None:
-                self._transport.publish(event)
+                await self._transport.publish(event)
                 if self._tracer:
                     self._tracer.record_step(
                         producer_id=producer.producer_id,
@@ -93,14 +97,14 @@ class SimpleRunner(Runner):
         if self._all_finished():
             self._finished = True
 
-    def run(self) -> None:
+    async def run(self) -> None:
         """Run all producers until completion."""
 
         if not self._started:
-            self.start()
+            await self.start()
 
         while not self.is_finished():
-            self.step()
+            await self.step()
 
     def is_finished(self) -> bool:
         """

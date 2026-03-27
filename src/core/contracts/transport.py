@@ -13,7 +13,14 @@ class Transport(ABC):
     """
 
     @abstractmethod
-    def publish(self, event: Event) -> None:
+    async def start(self) -> None:
+        """
+        Start the transport mechanism to begin processing events.
+        """
+        pass
+
+    @abstractmethod
+    async def publish(self, event: Event) -> None:
         """
         Publish an event to all subscribed consumers.
         Args:
