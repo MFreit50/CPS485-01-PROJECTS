@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import List
 
 from src.core.contracts.event import Event
-from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
-from src.producers.nn.models.neuron_forward_step_result import NeuronForwardStepResult
+from src.producers.nn.events.layer_forward_step_result import LayerForwardStepResult
+from src.producers.nn.events.neuron_forward_step_result import NeuronForwardStepResult
 
 
 @dataclass(frozen=True)
