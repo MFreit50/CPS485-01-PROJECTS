@@ -29,6 +29,8 @@ class BaseTransport(Transport, ABC):
     - Provide lifecycle management
     """
 
+    # TODO: Allow Consumers to subscribe to specific event types or producers in the future for more efficient routing
+
     def __init__(self) -> None:
         self._consumers: List[Consumer] = []
         self._state = TransportState.INITIAL
