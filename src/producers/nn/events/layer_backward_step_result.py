@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.producers.nn.models.neuron_backward_step_result import NeuronBackwardStepResult
+from src.producers.nn.events.neuron_backward_step_result import NeuronBackwardStepResult
 
 
 @dataclass(frozen=True)
