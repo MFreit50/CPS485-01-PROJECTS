@@ -2,9 +2,9 @@ import random
 from typing import ClassVar, List
 
 from src.producers.nn.activations.base import Activation
-from src.producers.nn.models.neuron_backward_step_result import NeuronBackwardStepResult
-from src.producers.nn.models.neuron_forward_step_result import NeuronForwardStepResult
-from src.producers.nn.models.neuron_update_step_result import NeuronUpdateStepResult
+from src.producers.nn.events.neuron_backward_step_result import NeuronBackwardStepResult
+from src.producers.nn.events.neuron_forward_step_result import NeuronForwardStepResult
+from src.producers.nn.events.neuron_update_step_result import NeuronUpdateStepResult
 
 
 class Neuron:
