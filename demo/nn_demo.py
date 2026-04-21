@@ -1,67 +1,41 @@
 import random
 
 from src.consumers.dummy_consumer import DummyConsumer
+from src.consumers.examples.formatted_print_consumer import FormattedPrintConsumer
 from src.core.execution.simple_runner import SimpleRunner
 from src.core.time.simple_clock import SimpleClock
 from src.core.trace.simple_runner_tracer import SimpleRunnerTracer
-from src.producers.nn.activations.sigmoid import Sigmoid
-from src.producers.nn.layer import Layer
-from src.producers.nn.losses.bce import BinaryCrossEntropy
-from src.producers.nn.neuron import Neuron
-from src.producers.nn.simple_nn import SimpleNeuralNetwork
+from src.producers.nn.builder.simple_nn_builder import SimpleNNBuilder
 from src.transport.in_memory.in_memory_transport import InMemoryTransport
 
 
 def main():
-
-    sigmoid = Sigmoid()
-    bce = BinaryCrossEntropy()
-
-    # Input layer with 2 inputs and 2 neurons
-    input_layer = Layer(
-        neurons=[
-            Neuron(rng=random.Random(42), num_inputs=2, activation_function=sigmoid),
-            Neuron(rng=random.Random(43), num_inputs=2, activation_function=sigmoid),
-        ]
-    )
-
-    # Hidden layer with 2 neurons
-    hidden_layer = Layer(
-        neurons=[
-            Neuron(rng=random.Random(44), num_inputs=2, activation_function=sigmoid),
-            Neuron(rng=random.Random(45), num_inputs=2, activation_function=sigmoid),
-        ]
-    )
-
-    # Output layer with 1 neuron
-    output_layer = Layer(
-        neurons=[
-            Neuron(rng=random.Random(46), num_inputs=2, activation_function=sigmoid)
-        ]
-    )
-
     # XOR dataset
     inputs = [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]
-
     outputs = [[0.0], [1.0], [1.0], [0.0]]
 
-    nn_producer = SimpleNeuralNetwork(
-        clock=SimpleClock().as_read_only(),
-        layers=[input_layer, hidden_layer, output_layer],
-        inputs=inputs,
-        expected_outputs=outputs,
-        loss_function=bce,
-        learning_rate=1.5,
-        epochs=12000,
+    nn_builder = SimpleNNBuilder(clock=SimpleClock().as_read_only())
+    nn = (
+        nn_builder.input_dataset(inputs.copy(), outputs)
+        .add_layer(2, "sigmoid")
+        .add_layer(2, "sigmoid")
+        .add_layer(1, "sigmoid")
+        .loss("bce")
+        .learning_rate(1.5)
+        .epochs(3000)
+        .rng(random.Random(42))
+        .build()
     )
 
     transport = InMemoryTransport()
     dummy_consumer = DummyConsumer()
+    consumer = FormattedPrintConsumer()
     transport.subscribe(dummy_consumer)
+    # transport.subscribe(consumer)
     tracer = SimpleRunnerTracer()
 
     runner = SimpleRunner(
-        clock=SimpleClock(), producers=[nn_producer], transport=transport, tracer=tracer
+        clock=SimpleClock(), producers=[nn], transport=transport, tracer=tracer
     )
 
     print("\n--- Running Simple Neural Network Producer ---")
@@ -69,7 +43,7 @@ def main():
 
     def predict():
         for x in inputs:
-            y = nn_producer.predict(x)
+            y = nn.predict(x)
             print(f"{x} -> {y}")
 
     predict()
