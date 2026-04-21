@@ -1,6 +1,7 @@
 from typing import List
 
 from src.core.contracts.event import Event
+from src.core.contracts.read_only_clock import ReadOnlyClock
 from src.core.errors import InvalidLifecycleError
 from src.core.events.neural_network.backward_propagation_step import (
     BackwardPropagationStep,
@@ -12,11 +13,11 @@ from src.core.events.neural_network.loss_computed import LossComputed
 from src.core.events.neural_network.training_complete import TrainingComplete
 from src.core.events.neural_network.weight_update_step import WeightUpdateStep
 from src.producers.base.base_producer import BaseProducer
+from src.producers.nn.events.layer_backward_step_result import LayerBackwardStepResult
+from src.producers.nn.events.layer_forward_step_result import LayerForwardStepResult
+from src.producers.nn.events.layer_update_step_result import LayerUpdateStepResult
 from src.producers.nn.layer import Layer
 from src.producers.nn.losses.base import Loss
-from src.producers.nn.models.layer_backward_step_result import LayerBackwardStepResult
-from src.producers.nn.models.layer_forward_step_result import LayerForwardStepResult
-from src.producers.nn.models.layer_update_step_result import LayerUpdateStepResult
 from src.producers.nn.nn_state import NN_State as State
 
 
@@ -24,7 +25,7 @@ class SimpleNeuralNetwork(BaseProducer):
     # SGD IMPLEMENTATION
     def __init__(
         self,
-        clock,
+        clock: ReadOnlyClock,
         layers: List[Layer],
         inputs: List[List[float]],
         expected_outputs: List[List[float]],
@@ -206,7 +207,7 @@ class SimpleNeuralNetwork(BaseProducer):
                     sum(w * x for w, x in zip(neuron.weights, current_inputs))
                     + neuron.bias
                 )
-                outputs.append(neuron.activation_function.compute(z))
+                outputs.append(layer.activation_function.compute(z))
             current_inputs = outputs
 
         return current_inputs
